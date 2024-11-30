@@ -1,3 +1,25 @@
+local stepSize = 30 -- 40 may be the max
+local delay = 0.1 -- if 0 then instant kick
+
+getgenv().farming = true
+getgenv().autobuyarrow = true
+getgenv().autosell = true
+getgenv().farmitems = { -- items to farm and sell
+    ["Rokakaka"] = true,
+    ["Pure Rokakaka"] = true,
+    ["Diamond"] = true,
+    ["Dio's Diary"] = true,
+    ["Steel Ball"] = true,
+    ["Rib Cage of The Saint's Corpse"] = true,
+    ["Stone Mask"] = true,
+    ["Gold Coin"] = true,
+    ["Quinton's Glove"] = true,
+    ["Ancient Scroll"] = true,
+    ["Caesar's Headband"] = true,
+    ["Mysterious Arrow"] = true,
+    ["Zeppeli's Hat"] = true,
+    ["Clackers"] = true
+}
 
 
 
