@@ -15,6 +15,7 @@ local canSell = {
     "Clackers"
 }
 
+
 local OldNamecallTP
 OldNamecallTP = hookmetamethod(game, '__namecall', newcclosure(function(self, ...)
     local Arguments = {...}
@@ -133,11 +134,11 @@ local function TeleportToPlace(targetCFrame)
         end
     end
     HumanoidRootPart.CFrame = targetCFrame
-    task.wait(PickupDelay)
+    task.wait(getgenv().PickupDelay)
 end
 
 local function SellItems()
-    if not autosell then return end
+    if not getgenv().autosell then return end
     local Player = GetPlayer()
     local Character = GetCharacter()
     local Humanoid = Character:FindFirstChild("Humanoid")
@@ -192,6 +193,7 @@ end
 
 Invisibile()
 while AutoFarm do
+    SellItems()
     local TargetItem = LocateNextItem()
     if not TargetItem then
         TeleportToPlace(CFrame.new(math.random(-500, 500), 0, math.random(-500, 500)))
@@ -200,9 +202,8 @@ while AutoFarm do
         TeleportToPlace(TargetItem.CFrame)
         if (HumanoidRootPart.Position - TargetItem.CFrame.Position).Magnitude <= 8 then
             fireproximityprompt(TargetItem.ProximityPrompt)
-            task.wait(PickupDelay)
+            task.wait(getgenv().PickupDelay)
             TargetItem.Instance:Destroy()
         end
     end
 end
-
