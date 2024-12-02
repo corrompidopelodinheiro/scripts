@@ -1,3 +1,6 @@
+local stepSize = 750 -- 40 may be the max
+local delay = 0.3 -- if 0 then instant kick
+
 local itemHook;
 itemHook = hookfunction(getrawmetatable(game.Players.LocalPlayer.Character.HumanoidRootPart.Position).__index, function(p,i)
     if getcallingscript().Name == "ItemSpawn" and i:lower() == "magnitude" then
