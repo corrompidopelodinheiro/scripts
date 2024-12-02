@@ -1,5 +1,9 @@
+local NotificationHolder = loadstring(game:HttpGet("https://raw.githubusercontent.com/BocusLuke/UI/main/STX/Module.Lua"))()
+local Notification = loadstring(game:HttpGet("https://raw.githubusercontent.com/BocusLuke/UI/main/STX/Client.Lua"))()
 local stepSize = 750 -- 40 may be the max
 local delay = 0.3 -- if 0 then instant kick
+
+
 local itemHook;
 itemHook = hookfunction(getrawmetatable(game.Players.LocalPlayer.Character.HumanoidRootPart.Position).__index, function(p,i)
     if getcallingscript().Name == "ItemSpawn" and i:lower() == "magnitude" then
@@ -21,6 +25,28 @@ OldNamecallTP = hookmetamethod(game, '__namecall', newcclosure(function(self, ..
 
     return OldNamecallTP(self, ...)
 end))
+
+
+function GetPlayer()
+    return game:GetService("Players").LocalPlayer
+end
+
+function GetCharacter()
+    local player = GetPlayer()
+    return player and (player.Character or player.CharacterAdded:Wait())
+end
+
+local Prompt = game:GetService("CoreGui"):FindFirstChild("promptOverlay", true)
+Prompt.ChildAdded:Connect(function(Child)
+    if typeof(Child) == "Instance" and Child.Name == "ErrorPrompt" and Child.ClassName == "Frame" then
+        local Error = Child:FindFirstChild("ErrorMessage", true)
+        repeat task.wait() until Error.Text ~= "Label"
+        if Error.Text:find("kick") or Error.Text:find("conn") or Error.Text:find("rejoin") then
+            task.wait(1)
+            game:GetService("TeleportService"):Teleport(2809202155, GetPlayer())
+        end
+    end
+end)
 
 
 local Player = game.Players.LocalPlayer    
@@ -66,50 +92,56 @@ function startTimer()
 end
 startTimer()
 
+local UserInputService = game:GetService("UserInputService")
+local PlayerService = game:GetService("Players")
 
-function GetPlayer()
-    return game:GetService("Players").LocalPlayer
+--//Variables\\--
+local LocalPlayer = PlayerService.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local PlayerGui = LocalPlayer:FindFirstChild("PlayerGui")
+
+local UndergroundAnimation, Highlight
+
+function PlayAnimation(HumanoidCharacter, AnimationID, AnimationSpeed, Time)
+    local CreatedAnimation = Instance.new("Animation")
+    CreatedAnimation.AnimationId = AnimationID
+    local animationTrack = HumanoidCharacter:FindFirstChildOfClass("Humanoid"):FindFirstChildOfClass("Animator"):LoadAnimation(CreatedAnimation)
+
+    animationTrack:Play()
+    animationTrack:AdjustSpeed(AnimationSpeed)
+    animationTrack.Priority = Enum.AnimationPriority.Action4
+    animationTrack.TimePosition = Time
+    return animationTrack
 end
 
-function GetCharacter()
-    local player = GetPlayer()
-    return player and (player.Character or player.CharacterAdded:Wait())
+local function Invisibile()
+    local HUD = PlayerGui:FindFirstChild("HUD")
+    if HUD then
+        HUD.Parent = nil
+    end
+
+    -- Torna o jogador invisível
+    UndergroundAnimation = PlayAnimation(Character, "rbxassetid://7189062263", 0, 5)
+    LocalPlayer.Character = nil
+
+    UndergroundAnimation:Stop()
+    LocalPlayer.Character = Character
+
+    if HUD then
+        HUD.Parent = PlayerGui
+    end
+
+    Highlight = Instance.new("Highlight")
+    Highlight.Parent = Character
+    Highlight.Enabled = true
 end
 
 local SelectedItems = {}
-for itemName, canSell in pairs(farmitems) do -- inserts the items from the table on another table (lol)
+for itemName, canSell in pairs(getgenv().farmitems) do -- inserts the items from the table on another table (lol)
     if canSell then
         table.insert(SelectedItems, itemName)
     end
 end
-
--- core funcs
-function GetPlayer()
-    return game:GetService("Players").LocalPlayer
-end
-
-function GetCharacter()
-    local player = GetPlayer()
-    return player and (player.Character or player.CharacterAdded:Wait())
-end
-
-for i, v in pairs(workspace.Map.Terrain:GetChildren()) do
-    if v.Name == 'Rock' then
-        v:Destroy()
-    end
-end
-
-local Prompt = game:GetService("CoreGui"):FindFirstChild("promptOverlay", true)
-Prompt.ChildAdded:Connect(function(Child)
-    if typeof(Child) == "Instance" and Child.Name == "ErrorPrompt" and Child.ClassName == "Frame" then
-        local Error = Child:FindFirstChild("ErrorMessage", true)
-        repeat task.wait() until Error.Text ~= "Label"
-        if Error.Text:find("kick") or Error.Text:find("conn") or Error.Text:find("rejoin") then
-            task.wait(1)
-            game:GetService("TeleportService"):Teleport(2809202155, GetPlayer())
-        end
-    end
-end)
 
 -- deletes loading shit
 if not GetPlayer().PlayerGui:FindFirstChild("HUD") then
@@ -171,7 +203,7 @@ function checkAndPerformActionWhenNoRelevantItems()
             local meshPart = model:FindFirstChildOfClass("MeshPart")
             if meshPart and meshPart.Transparency < 1 then
                 local prompt = model:FindFirstChildOfClass("ProximityPrompt")
-                if prompt and farmitems[prompt.ObjectText] then
+                if prompt and getgenv().farmitems[prompt.ObjectText] then
                     foundRelevantItem = true
                     break
                 end
@@ -186,7 +218,7 @@ end
 
 -- selling shit
 local SelectedItems = {}
-for itemName, canSell in pairs(farmitems) do -- inserts the items from the table on another table (lol)
+for itemName, canSell in pairs(getgenv().farmitems) do -- inserts the items from the table on another table (lol)
     if canSell then
         table.insert(SelectedItems, itemName)
     end
@@ -196,7 +228,7 @@ end
 
 -- funcs
 function buyarrow()
-    if not autobuyarrow then return end
+    if not getgenv().autobuyarrow then return end
     local player = game:GetService("Players").LocalPlayer
     local backpack = player:FindFirstChild("Backpack")
     local money = player.PlayerStats.Money.Value
@@ -235,7 +267,7 @@ function noclip()
 end
 
 local function SellItems()
-    if not autosell then return end
+    if not getgenv().autosell then return end
     local Player = GetPlayer()
     local Character = GetCharacter()  
     local Humanoid = Character:FindFirstChild("Humanoid")
@@ -344,7 +376,6 @@ function goto(targetPosition, stepSize, delay)
         local targetItem = getTargetitem()
         if targetItem then
             gotopos(targetItem.PrimaryPart.Position, stepSize, delay)
-            task.wait(PickupDelay)
             proximityfire(targetItem)
             return
         end
@@ -389,9 +420,21 @@ function randomcoords()
     return Vector3.new(coordArray[1], coordArray[2], coordArray[3])
 end
 
+
+Notification:Notify(
+    {Title = "Info", Description = "handshaking anticheat"},
+    {OutlineColor = Color3.fromRGB(80, 80, 80),Time = 3, Type = "default"}
+)
+task.wait(3)
+Notification:Notify(
+    {Title = "Info", Description = "done"},
+    {OutlineColor = Color3.fromRGB(80, 80, 80),Time = 3, Type = "default"}
+)
+
+Invisibile()
 -- core
-while farming do
-    if not farming then
+while wait() do
+    if not getgenv().farming then
         break
     end
     task.wait()
@@ -399,6 +442,7 @@ while farming do
     pcall(SellItems)
     pcall(buyarrow)
     local randomCoord = randomcoords()
+    
     if randomCoord then
         pcall(function()
             goto(randomCoord, stepSize, delay)        
