@@ -1,0 +1,554 @@
+
+
+if not game.Players.LocalPlayer.PlayerGui:FindFirstChild("HUD") then
+    local HUD = game:GetService("ReplicatedStorage").Objects.HUD:Clone()
+    HUD.Parent = game.Players.LocalPlayer.PlayerGui
+end
+
+game.Players.LocalPlayer.Character:WaitForChild("RemoteEvent"):FireServer("PressedPlay")
+
+pcall(function()
+    game.Players.LocalPlayer.PlayerGui:FindFirstChild("LoadingScreen1"):Destroy()
+end)   
+
+task.wait(.5)
+
+pcall(function()
+    game.Players.LocalPlayer.PlayerGui:FindFirstChild("LoadingScreen"):Destroy()
+end)
+
+pcall(function()
+    workspace.LoadingScreen.Song.Playing = false
+end)
+
+pcall(function()
+    for i,v in pairs(game.Lighting:GetChildren()) do
+        if v.Name == "DepthOfField" then
+            v.Enabled = false
+        end
+    end
+end)
+
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local Window = Fluent:CreateWindow({
+    Title = "yba auto prestige",
+    SubTitle = "huge thanks to xenon devs",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true,
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.RightControl
+})
+
+
+local OldNamecallTP
+OldNamecallTP = hookmetamethod(game, '__namecall', newcclosure(function(self, ...)
+    local Arguments = {...}
+    local Method = getnamecallmethod()
+    if Method == "InvokeServer" and Arguments[1] == "idklolbrah2de" then
+        return "  ___XP DE KEY"
+    end
+    if (Method == "FireServer" or Method == "InvokeServer" or Method == "InvokeClient") and Arguments[1] == "Reset" and Arguments[3] ~= "kissinthehomiesgoodnight" then
+        return wait(9e9)
+    end
+    return OldNamecallTP(self, ...)
+end))
+
+hookfunction(workspace.Raycast, function() -- noclip bypass
+    return
+end)
+
+
+local LocalPlayer = game.Players.LocalPlayer
+local Character = LocalPlayer.Character
+local questPanel = LocalPlayer.PlayerGui.HUD.Main.Frames.Quest.Quests
+local HRP = Character.PrimaryPart
+repeat task.wait() until Character:FindFirstChild("RemoteEvent") and Character:FindFirstChild("RemoteFunction")
+local RemoteFunction, RemoteEvent = Character.RemoteFunction, Character.RemoteEvent
+
+local function endDialogue(NPC, Dialogue, Option)
+    local dialogueToEnd = {
+        ["NPC"] = NPC,
+        ["Dialogue"] = Dialogue,
+        ["Option"] = Option
+     }
+    RemoteEvent:FireServer("EndDialogue", dialogueToEnd)
+end
+
+function rejoin()
+    game:GetService("TeleportService"):Teleport(2809202155, game.Players.LocalPlayer)
+end
+
+local function skipstory()
+    local Quest =
+    {
+    ["Storyline"] = {"#1", "#1", "#1", "#2", "#3", "#3", "#3", "#4", "#5", "#6", "#7", "#8", "#9", "#10", "#11", "#11", "#12", "#14"},
+    ["Dialogue"] = {"Dialogue2", "Dialogue6", "Dialogue6", "Dialogue3", "Dialogue3", "Dialogue3", "Dialogue6", "Dialogue3", "Dialogue5", "Dialogue5", "Dialogue5", "Dialogue4", "Dialogue7", "Dialogue6", "Dialogue8", "Dialogue11", "Dialogue3", "Dialogue2"}
+    }
+    
+    for counter = 1, 18, 1 do
+       RemoteEvent:FireServer("EndDialogue", {["NPC"] = "Storyline".. " " .. Quest["Storyline"][counter],["Dialogue"] = Quest["Dialogue"][counter],["Option"] = "Option1"})
+    end
+end
+
+local cansell = {
+    "Rokakaka",
+    "Pure Rokakaka",
+    "Diamond",
+    "Dio's Diary",
+    "Steel Ball",
+    "Rib Cage of The Saint's Corpse",
+    "Stone Mask",
+    "Gold Coin",
+    "Quinton's Glove",
+    "Ancient Scroll",
+    "Caesar's Headband",
+    "Mysterious Arrow",
+    "Zeppeli's Hat",
+    "Clackers"
+}
+
+    local function GetPlayer()
+        return game:GetService("Players").LocalPlayer
+    end
+
+    local function GetCharacter()
+        local player = GetPlayer()
+        return player and (player.Character or player.CharacterAdded:Wait())
+    end
+
+    local function TeleportToPlace(targetCFrame)
+        local Character = GetCharacter()
+        local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+        HumanoidRootPart.CFrame = targetCFrame
+        task.wait(0.3)
+    end
+
+    local function noclip()
+        local character = GetCharacter()
+        for _, part in pairs(character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+
+    local function SellItems()
+        local Player = GetPlayer()
+        local Character = GetCharacter()  
+        local Humanoid = Character:FindFirstChild("Humanoid")
+        if not Humanoid then
+            print("Humanoid not found.")
+            return
+        end
+        for _, itemName in ipairs(cansell) do
+            if Player and Character then
+                local Tool = Player.Backpack:FindFirstChild(itemName)
+                if Tool then
+                    Humanoid:EquipTool(Tool)
+                    local RemoteEvent = Character:FindFirstChild("RemoteEvent")
+                    if RemoteEvent then
+                        RemoteEvent:FireServer("EndDialogue", {NPC = "Merchant", Option = "Option1", Dialogue = "Dialogue5"})
+                    end
+                end
+            end
+        end
+    end
+
+    local function proximityfire(itemModel)
+        local prompt = itemModel:FindFirstChildOfClass("ProximityPrompt")
+        if prompt then
+            prompt.RequiresLineOfSight = false
+            prompt.HoldDuration = 0
+            prompt.MaxActivationDistance = 30
+            local character = GetCharacter()
+            if character then
+                local targetPosition = itemModel.PrimaryPart.Position
+                while itemModel and itemModel.Parent == workspace.Item_Spawns.Items do
+                    if (character.PrimaryPart.Position - targetPosition).Magnitude <= 5 then
+                        fireproximityprompt(prompt)
+                        break
+                    end
+                    wait(0.1)
+                end
+            end
+        end
+    end
+
+    local function LocateNextItem()
+        for _, Item in pairs(workspace.Item_Spawns.Items:GetChildren()) do
+            local ItemMeshPart = Item:FindFirstChild("MeshPart")
+            local ProximityPrompt = Item:FindFirstChild("ProximityPrompt")
+
+            if not ItemMeshPart or not ProximityPrompt then
+                continue
+            end
+            if ItemMeshPart.Transparency == 1 then
+                continue
+            end
+            return {
+                ["ItemName"] = ProximityPrompt.ObjectText,
+                ["ProximityPrompt"] = ProximityPrompt,
+                ["CFrame"] = ItemMeshPart.CFrame,
+                ["Instance"] = Item
+            }
+        end
+    end
+
+local function killNPC(npcName, playerDistance, dontDestroyOnKill, extraParameters)
+    print("DEBUG CHECK 1", npcName, playerDistance, dontDestroyOnKill, extraParameters)
+local part
+local dontTPOnDeath = true
+	local NPC = workspace.Living:WaitForChild(npcName)
+	local beingTargeted = true
+    local doneKilled = false
+	local deadCheck
+    if LocalPlayer.Character.Humanoid.Health >= 50 then
+        HRP.CFrame = NPC.HumanoidRootPart.CFrame - Vector3.new(0, 5, 0)
+    end 
+    if not NPC then
+    end
+
+    local function setStandMorphPosition()
+        pcall(function()
+            if LocalPlayer.PlayerStats.Stand.Value == "None" then
+                HRP.CFrame = NPC.HumanoidRootPart.CFrame - Vector3.new(0, 5, 0)
+                return
+            end
+
+            if not Character:FindFirstChild("SummonedStand").Value or not Character:FindFirstChild("StandMorph") then
+                RemoteFunction:InvokeServer("ToggleStand", "Toggle")
+                return
+            end
+
+            Character.StandMorph.PrimaryPart.CFrame = NPC.HumanoidRootPart.CFrame + NPC.HumanoidRootPart.CFrame.lookVector * -1.1
+            HRP.CFrame = Character.StandMorph.PrimaryPart.CFrame + Character.StandMorph.PrimaryPart.CFrame.lookVector - Vector3.new(0, playerDistance, 0)
+            
+            if not Character:FindFirstChild("FocusCam") then
+                local FocusCam = Instance.new("ObjectValue", Character)
+                FocusCam.Name = "FocusCam"
+                FocusCam.Value = Character.StandMorph.PrimaryPart
+            end
+            
+            if Character:FindFirstChild("FocusCam") and Character.FocusCam.Value ~= Character.StandMorph.PrimaryPart then
+                Character.FocusCam.Value = Character.StandMorph.PrimaryPart
+            end
+        end)
+    end
+
+    local function HamonCharge()
+        if not Character:FindFirstChild("Hamon") then
+            return
+        end
+
+        if Character.Hamon.Value <= getgenv().HamonCharge then
+            RemoteFunction:InvokeServer("AssignSkillKey", {["Type"] = "Spec",["Key"] = "Enum.KeyCode.L",["Skill"] = "Hamon Charge"})
+            Character.RemoteEvent:FireServer("InputBegan", {["Input"] = Enum.KeyCode.L})
+        end
+    end
+
+    local function BlockBreaker()
+        if not NPC or NPC.Parent == nil then
+            return
+        end
+    
+        if game:GetService("CollectionService"):HasTag(NPC, "Blocking") then
+            RemoteEvent:FireServer("InputBegan", {["Input"] = Enum.KeyCode.R})
+        elseif NPC.Humanoid.Health <= 1 then
+            task.spawn(function()
+                task.wait(5)
+                if NPC then
+                    RemoteFunction:InvokeServer("Attack", "m1")
+                end
+            end)
+        elseif NPC.Humanoid.Health >= 1 then
+            RemoteFunction:InvokeServer("Attack", "m1")
+        end
+    end
+    
+
+    deadCheck = LocalPlayer.PlayerGui.HUD.Main.DropMoney.Money.ChildAdded:Connect(function(child)
+        local number = tonumber(string.match(child.Name,"%d+"))
+
+        if number and NPC then
+            doneKilled = true
+
+            deadCheck:Disconnect()
+
+            if not dontDestroyOnKill then
+                NPC:Destroy()
+            end
+        end
+    end)
+
+    while beingTargeted do
+        task.wait()
+        if not NPC:FindFirstChild("HumanoidRootPart") then
+            deadCheck:Disconnect()
+            beingTargeted = false
+        end
+    
+        if extraParameters then
+            extraParameters()
+        end
+    
+        task.spawn(setStandMorphPosition)
+        task.spawn(HamonCharge)
+        task.spawn(BlockBreaker)
+    end
+    
+    
+    print(doneKilled)
+    return doneKilled
+end
+
+function autostoryline()
+    local hasStorylineQuest = false
+    skipstory()
+    if questPanel:FindFirstChild("Help Giorno by Defeating Security Guards") then
+        for i = 1, 5 do
+            killNPC("Security Guard", 15)
+            task.wait(1)
+            skipstory()
+        end
+        hasStorylineQuest = true
+    elseif questPanel:FindFirstChild("Defeat Leaky Eye Luca") then
+        print("beating up lucas ass")
+        if killNPC("Leaky Eye Luca", 15) then
+            task.wait(1)
+            skipstory()
+        else
+            skipstory()
+        end
+        hasStorylineQuest = true
+    elseif questPanel:FindFirstChild("Defeat Bucciarati") then
+        print("BUCCIARATI")
+        if killNPC("Bucciarati", 15) then
+            task.wait(1)
+            skipstory()
+        else
+            skipstory()
+        end
+        hasStorylineQuest = true
+    elseif questPanel:FindFirstChild("Collect $5,000 To Cover For Popo's Real Fortune") then
+        if LocalPlayer.PlayerStats.Money.Value >= 5000 then
+            skipstory()
+        else
+            print('no money, turn auto 15k on')
+        end
+        hasStorylineQuest = true
+    elseif questPanel:FindFirstChild("Defeat Fugo And His Purple Haze") then
+        if killNPC("Fugo", 15) then
+            task.wait(1)
+            skipstory()
+        else
+            skipstory()
+        end
+        hasStorylineQuest = true
+    elseif questPanel:FindFirstChild("Defeat Pesci") then
+        if killNPC("Pesci", 15) then
+            task.wait(1)
+            skipstory()
+        else
+            skipstory()
+        end
+        hasStorylineQuest = true
+    elseif questPanel:FindFirstChild("Defeat Ghiaccio") then
+        if killNPC("Ghiaccio", 15) then
+            task.wait(1)
+            skipstory()
+        else
+            skipstory()
+        end
+        hasStorylineQuest = true
+    elseif questPanel:FindFirstChild("Defeat Diavolo") then
+        killNPC("Diavolo", 15)
+        endDialogue("Storyline #14", "Dialogue7", "Option1")
+        if Character:WaitForChild("Requiem Arrow", 5) then
+            LocalPlayer.Character.Humanoid.Health = 0
+        end
+        hasStorylineQuest = true
+    elseif LocalPlayer.PlayerStats.Level.Value >= 25 and hasStorylineQuest == false and LocalPlayer.Character.Humanoid.Health >= 5 then
+        endDialogue("William Zeppeli", "Dialogue4", "Option1")
+        task.wait(1)
+        for i = 1, 3 do
+            killNPC("Vampire", 15)
+        end
+    end
+end
+
+
+function allocateskills() --this should make the destructive shit stuff
+    task.spawn(function()
+        RemoteFunction:InvokeServer("LearnSkill", {["Skill"] = "Destructive Power V",["SkillTreeType"] = "Stand"})
+        RemoteFunction:InvokeServer("LearnSkill", {["Skill"] = "Destructive Power IV",["SkillTreeType"] = "Stand"})
+        RemoteFunction:InvokeServer("LearnSkill", {["Skill"] = "Destructive Power III",["SkillTreeType"] = "Stand"})
+        RemoteFunction:InvokeServer("LearnSkill", {["Skill"] = "Destructive Power II",["SkillTreeType"] = "Stand"})
+        RemoteFunction:InvokeServer("LearnSkill", {["Skill"] = "Destructive Power I",["SkillTreeType"] = "Stand"})
+        
+        if LocalPlayer.PlayerStats.Spec.Value == "Hamon (Jonathan Joestar)" then
+            RemoteFunction:InvokeServer("LearnSkill", {["Skill"] = "Hamon Punch",["SkillTreeType"] = "Spec"})
+            RemoteFunction:InvokeServer("LearnSkill", {["Skill"] = "Lung Capacity V", ["SkillTreeType"] = "Spec"})
+            RemoteFunction:InvokeServer("LearnSkill", {["Skill"] = "Hamon Breathing V",["SkillTreeType"] = "Spec"})
+        end
+    end)
+end
+
+function vampirequest()
+       if LocalPlayer.PlayerStats.Level.Value >= 25 then
+        endDialogue("William Zeppeli", "Dialogue4", "Option1")
+        wait()
+        for i = 1, 3 do
+            killNPC("Vampire", 15)
+        end
+    end
+end
+
+local function checkPrestige(level, prestige)
+    if (level == 35 and prestige == 0) or (level == 40 and prestige == 1) or (level == 45 and prestige == 2) then
+        endDialogue("Prestige", "Dialogue2", "Option1")
+        return true
+    else
+        return false
+    end
+end
+
+local Prompt = game:GetService("CoreGui"):FindFirstChild("promptOverlay", true)
+Prompt.ChildAdded:Connect(function(Child)
+    if typeof(Child) == "Instance" and Child.Name == "ErrorPrompt" and Child.ClassName == "Frame" then
+        local Error = Child:FindFirstChild("ErrorMessage", true)
+        repeat task.wait() until Error.Text ~= "Label"
+        if Error.Text:find("kick") or Error.Text:find("conn") or Error.Text:find("rejoin") then
+            task.wait(1)
+            game:GetService("TeleportService"):Teleport(2809202155, game.Players.LocalPlayer)
+        end
+    end
+end)
+
+local Tabs = {
+    story = Window:AddTab({ Title = "main", Icon = "" })
+}
+Tabs.story:AddButton({
+    Title = "skip story dialogue",
+    Description = "",
+    Callback = function()
+        skipstory()
+    end
+})
+
+local running = false
+local autostoryactive = false
+local autoallocate = false
+local autovampire = false
+local autoprestige = false
+
+local Toggle = Tabs.story:AddToggle("Auto Storyline", 
+{
+    Title = "Get 15k money", 
+    Description = "",
+    Default = false,
+    Callback = function(state)
+        running = state
+        if state then
+            spawn(function()
+                while running do
+                    if game.Players.LocalPlayer.PlayerStats.Money.Value > 15000 then
+                        break
+                    end
+                    task.wait()
+                    pcall(noclip)
+                    pcall(SellItems)
+                    local TargetItem = LocateNextItem()
+
+                    if not TargetItem then
+                        TeleportToPlace(CFrame.new(math.random(-700, 700), 0, math.random(-700, 700)))
+                        task.wait()
+                    else
+                        TeleportToPlace(TargetItem.CFrame)
+                        if (GetCharacter().HumanoidRootPart.Position - TargetItem.CFrame.Position).Magnitude <= 8 then
+                            proximityfire(TargetItem.Instance)
+                            task.wait(0.3)
+                            TargetItem.Instance:Destroy()
+                        end
+                    end
+                end
+            end)
+        else
+            running = false
+        end
+    end
+})
+
+
+
+local Toggle1 = Tabs.story:AddToggle("Auto Storyline", 
+{
+    Title = "Auto Storyline", 
+    Description = "",
+    Default = false,
+    Callback = function(state)
+        autostoryactive = state
+        if state then
+            while autostoryactive do
+                wait()
+                autostoryline()
+                if storycompleted then
+                    Toggle1:SetValue(false)
+                    autostoryactive = false
+                    break
+                end
+            end
+        else
+        end
+    end
+})
+
+local Toggle = Tabs.story:AddToggle("auto destructive power", 
+{
+    Title = "auto destructive power", 
+    Description = "",
+    Default = false,
+    Callback = function(state)
+        autoallocate = state
+        if state then
+            while autoallocate do
+                wait()
+                allocateskills()
+            end
+        else
+        end
+    end
+})
+
+local Toggle = Tabs.story:AddToggle("Auto prestige", 
+{
+    Title = "auto prestige", 
+    Description = "",
+    Default = false,
+    Callback = function(state)
+        autoprestige = state
+        if state then
+            spawn(function()
+                while autoprestige do
+                    wait()
+                    if checkPrestige(LocalPlayer.PlayerStats.Level.Value, LocalPlayer.PlayerStats.Prestige.Value) then
+                        print("Prestiged")
+                        wait(1)
+                        rejoin()
+                    end
+                end
+            end)
+        end
+    end
+})
+LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(1)
+    for _, child in pairs(LocalPlayer.Character:GetDescendants()) do
+        if child:IsA("BasePart") and child.CanCollide == true then
+            child.CanCollide = false
+        end
+    end
+end)
+
+
+Window:SelectTab(1)
